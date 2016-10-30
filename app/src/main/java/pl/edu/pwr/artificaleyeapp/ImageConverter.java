@@ -138,11 +138,11 @@ private final static float GAUSSIAN_CUT_OFF = 0.005f;
         if (contrastNormalised) {
             normalizeContrast();
         }
-        computeGradients(gaussianKernelRadius, gaussianKernelWidth);
+      /*  computeGradients(gaussianKernelRadius, gaussianKernelWidth);
         int low = Math.round (lowThreshold * MAGNITUDE_SCALE);
         int high = Math.round (highThreshold * MAGNITUDE_SCALE);
         performHysteresis(low, high);
-        thresholdEdges();
+        thresholdEdges();*/
         writeEdges(data);
         Log.i("Processing", "Processing terminated, time required: " + (System.nanoTime() - start));
     }

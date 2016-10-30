@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
     public final static String EXTRA_IMAGE = "BitmapImage";
@@ -35,16 +36,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void intentChangeModes()
+    public void intentTestPhoto()
     {
-        Intent changeMode = new Intent(this, ModesActivity.class);
-        startActivity(changeMode);
-    }
-
-    public void intentAddMode()
-    {
-        Intent addMode = new Intent(this, AddModeActivity.class);
-        startActivity(addMode);
+        Intent testPhoto = new Intent(this, TestPhotoActivity.class);
+        startActivity(testPhoto);
     }
 
     @Override
@@ -53,8 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getIntent();
         final Button start = (Button) findViewById(R.id.startButton);
-        final Button change = (Button) findViewById(R.id.choiceOfModeButton);
-        final Button add = (Button) findViewById(R.id.addModeButton);
+        final Button test = (Button) findViewById(R.id.testButton);
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,19 +57,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        change.setOnClickListener(new View.OnClickListener(){
+        test.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v)
             {
-                intentChangeModes();
-            }
-        });
-
-        add.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v)
-            {
-                intentAddMode();
+                intentTestPhoto();
             }
         });
 
@@ -87,14 +73,20 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            ImageConverter imgConv = new ImageConverter(this);
-            imgConv.setNewSize(imageBitmap.getHeight(), imageBitmap.getWidth());
-            imgConv.setImageConverter(imageBitmap);
-            imgConv.setSourceImg(imgConv.resize());
-            imgConv.process();
-            Bitmap edges = imgConv.getEdgesImg();
+
+            Binarize binarize = new Binarize();
+Bitmap bitmap = null;
+            try {
+                binarize.setImage(imageBitmap);
+                bitmap = binarize.toBitmap(this, "xxx");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
             Intent camIntent = new Intent(this, CameraActivity.class);
-            camIntent.putExtra(EXTRA_IMAGE, edges);
+            camIntent.putExtra(EXTRA_IMAGE, bitmap);
             startActivity(camIntent);
         }
    }

@@ -20,8 +20,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".CameraActivity" />
-        <activity android:name=".ModesActivity" />
-        <activity android:name=".AddModeActivity"></activity>
+        <activity android:name=".TestPhotoActivity" />
     </application>
 
 </manifest>
