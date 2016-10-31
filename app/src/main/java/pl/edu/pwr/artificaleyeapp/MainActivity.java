@@ -75,10 +75,9 @@ public class MainActivity extends AppCompatActivity {
             Bitmap imageBitmap = (Bitmap) extras.get("data");
 
             Binarize binarize = new Binarize();
-Bitmap bitmap = null;
+            Bitmap bitmap = null;
             try {
-                binarize.setImage(imageBitmap);
-                bitmap = binarize.toBitmap(this, "xxx");
+                bitmap = binarize.toBitmap(this, "xxx", imageBitmap);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {

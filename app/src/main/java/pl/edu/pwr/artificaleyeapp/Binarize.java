@@ -8,13 +8,17 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.os.Environment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  * Created by nieop on 30.10.2016.
@@ -25,22 +29,24 @@ public class Binarize {
     private static int width;
     private static int height;
 
-    public static Bitmap toBitmap(Context context, String filename) throws FileNotFoundException, UnsupportedEncodingException {
+    public static Bitmap toBitmap(Context context, String filename, Bitmap bitmap ) throws FileNotFoundException, UnsupportedEncodingException {
         if (filename != "xxx") {
             openFile(context, filename);
         }
-        //;
-      return createContrast(convertImageToBlackAndWhite(), 0.5);
-     /*   if (isMoreBlack())
-            image = revertColors();
-        String[] name = filename.split("\\.");
+        else {
+            setImage(bitmap);
+        }
+        convertImageToBlackAndWhite();
+        binarizeImage();
+
+        if (isMoreBlack())
+            revertColors();
+
         if (detectBorder()) {
             return cutBorders();
         } else {
-           return image;
+            return image;
         }
-        */
-
     }
 
     public static Bitmap getImage() {
@@ -95,7 +101,7 @@ public class Binarize {
         }
     }
 
-    private static Bitmap convertImageToBlackAndWhite() {
+    private static void convertImageToBlackAndWhite() {
         Bitmap bwImage = Bitmap.createBitmap(
                 width, height, image.getConfig());
 
@@ -115,11 +121,11 @@ public class Binarize {
             }
         }
 
-        return bwImage;
+        image = bwImage;
     }
 
     private static void convertImageToGrayScale() {
-        Bitmap newBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap newBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),image.getConfig());
         Canvas c = new Canvas(newBitmap);
         c.drawBitmap(image, 0, 0, new Paint());
 
@@ -138,7 +144,7 @@ public class Binarize {
         image = newBitmap;
     }
 
-    private static Bitmap binarizeImage() {
+    private static void binarizeImage() {
 
         int color;
         int newPixel;
@@ -163,7 +169,7 @@ public class Binarize {
 
             }
         }
-        return tmp;
+        image = tmp;
     }
 
     private static int colorToRGB(int alpha, int red, int green, int blue) {
@@ -182,82 +188,7 @@ public class Binarize {
     }
 
     private static int threshold() {
-
-        int[] bitmap = doBitmap();
-        int total = width * height;
-
-        float sum = 0;
-        for (int i = 0; i < 256; i++) sum += i * bitmap[i];
-
-        float sumB = 0;
-        int wB = 0;
-        int wF = 0;
-
-        float varMax = 0;
-        int threshold = 0;
-
-        for (int i = 0; i < 256; i++) {
-            wB += bitmap[i];
-            if (wB == 0) continue;
-            wF = total - wB;
-
-            if (wF == 0) break;
-
-            sumB += (float) (i * bitmap[i]);
-            float mB = sumB / wB;
-            float mF = (sum - sumB) / wF;
-
-            float varBetween = (float) wB * (float) wF * (mB - mF) * (mB - mF);
-
-            if (varBetween > varMax) {
-                varMax = varBetween;
-                threshold = i;
-            }
-        }
-
-        return threshold;
-    }
-
-    public static Bitmap createContrast(Bitmap src, double value) {
-        // image size
-        int width = src.getWidth();
-        int height = src.getHeight();
-        // create output bitmap
-        Bitmap bmOut = Bitmap.createBitmap(width, height, src.getConfig());
-        // color information
-        int A, R, G, B;
-        int pixel;
-        // get contrast value
-        double contrast = Math.pow((100 + value) / 100, 2);
-
-        // scan through all pixels
-        for(int x = 0; x < width; ++x) {
-            for(int y = 0; y < height; ++y) {
-                // get pixel color
-                pixel = src.getPixel(x, y);
-                A = Color.alpha(pixel);
-                // apply filter contrast for every channel R, G, B
-                R = Color.red(pixel);
-                R = (int)(((((R / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
-                if(R < 0) { R = 0; }
-                else if(R > 255) { R = 255; }
-
-                G = Color.red(pixel);
-                G = (int)(((((G / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
-                if(G < 0) { G = 0; }
-                else if(G > 255) { G = 255; }
-
-                B = Color.red(pixel);
-                B = (int)(((((B / 255.0) - 0.5) * contrast) + 0.5) * 255.0);
-                if(B < 0) { B = 0; }
-                else if(B > 255) { B = 255; }
-
-                // set new pixel color to output bitmap
-                bmOut.setPixel(x, y, Color.argb(A, R, G, B));
-            }
-        }
-
-        return bmOut;
+        return 100;
     }
 
     private static int[] doBitmap() {
@@ -294,8 +225,8 @@ public class Binarize {
         else return false;
     }
 
-    public static Bitmap revertColors() {
-        Bitmap reverted = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    private static void revertColors() {
+        Bitmap reverted = Bitmap.createBitmap(width, height, image.getConfig());
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -307,7 +238,7 @@ public class Binarize {
                 }
             }
         }
-        return reverted;
+        image = reverted;
     }
 
     private static Bitmap cutBorders() {
@@ -316,7 +247,7 @@ public class Binarize {
         int newWidth = width - 2*borderWidth;
         int newHeight = height - 2*borderHeight;
 
-        Bitmap imageWithoutBorders = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
+        Bitmap imageWithoutBorders = Bitmap.createBitmap(newWidth, newHeight, image.getConfig());
 
         int i_b = 0;
 
