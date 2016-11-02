@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -47,9 +48,9 @@ public class TestPhotoActivity extends AppCompatActivity {
         super.onCreate(saveInstanceState);
         setContentView(R.layout.activity_test);
 
-        final Button piastowButton = (Button) findViewById(R.id.piastowButton);
-        final Button uwagaButton = (Button) findViewById(R.id.uwagaButton);
-        final Button strefaRuchuButton = (Button) findViewById(R.id.strefaruchuButton);
+        final ImageButton piastowButton = (ImageButton) findViewById(R.id.piastowButton);
+        final ImageButton uwagaButton = (ImageButton) findViewById(R.id.uwagaButton);
+        final ImageButton strefaRuchuButton = (ImageButton) findViewById(R.id.strefaruchuButton);
 
         piastowButton.setOnClickListener(new View.OnClickListener()
             {
