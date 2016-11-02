@@ -23,31 +23,11 @@ import java.nio.channels.FileChannel;
 /**
  * Created by nieop on 30.10.2016.
  */
-public class Binarize {
+public class BitmapConverter {
 
     private static Bitmap image;
     private static int width;
     private static int height;
-
-    public static Bitmap toBitmap(Context context, String filename, Bitmap bitmap ) throws FileNotFoundException, UnsupportedEncodingException {
-        if (filename != "xxx") {
-            openFile(context, filename);
-        }
-        else {
-            setImage(bitmap);
-        }
-        convertImageToBlackAndWhite();
-        binarizeImage();
-
-        if (isMoreBlack())
-            revertColors();
-
-        if (detectBorder()) {
-            return cutBorders();
-        } else {
-            return image;
-        }
-    }
 
     public static Bitmap getImage() {
         return image;
@@ -59,49 +39,7 @@ public class Binarize {
         height = bitmap.getHeight();
     }
 
-    public static void openFile(Context context, String filename) {
-        try {
-            int resourceId = context.getResources().getIdentifier(filename, "drawable", context.getPackageName());
-            image = BitmapFactory.decodeResource(context.getResources(), resourceId);
-            width = image.getWidth();
-            height = image.getHeight();
-
-        } catch (Exception e) {
-            System.out.println("Cannot open the file.");
-        }
-    }
-
-    public static Bitmap scaleDownBitmap(Bitmap photo, int newHeight, Context context) {
-
-        final float densityMultiplier = context.getResources().getDisplayMetrics().density;
-
-        int h= (int) (newHeight*densityMultiplier);
-        int w= (int) (h * photo.getWidth()/((double) photo.getHeight()));
-
-        photo=Bitmap.createScaledBitmap(photo, w, h, true);
-
-        return photo;
-    }
-
-    public static void saveNewFile(Bitmap imageToSave, String filename) {
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(filename);
-            imageToSave.compress(Bitmap.CompressFormat.JPEG, 100, out);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static void convertImageToBlackAndWhite() {
+    protected static void convertImageToBlackAndWhite() {
         Bitmap bwImage = Bitmap.createBitmap(
                 width, height, image.getConfig());
 
@@ -144,7 +82,7 @@ public class Binarize {
         image = newBitmap;
     }
 
-    private static void binarizeImage() {
+    protected static void binarizeImage() {
 
         int color;
         int newPixel;
@@ -205,7 +143,7 @@ public class Binarize {
         return bitmap;
     }
 
-    private static boolean isMoreBlack() {
+    protected static boolean isMoreBlack() {
         int blackCounter = 0;
         int whiteCounter = 0;
 
@@ -225,7 +163,7 @@ public class Binarize {
         else return false;
     }
 
-    private static void revertColors() {
+    protected static void revertColors() {
         Bitmap reverted = Bitmap.createBitmap(width, height, image.getConfig());
 
         for (int i = 0; i < height; i++) {
@@ -241,7 +179,7 @@ public class Binarize {
         image = reverted;
     }
 
-    private static Bitmap cutBorders() {
+    protected static void cutBorders() {
         int borderWidth = (int) (0.05*width);
         int borderHeight = (int) (0.05*height);
         int newWidth = width - 2*borderWidth;
@@ -259,10 +197,10 @@ public class Binarize {
             i_b++;
         }
 
-        return imageWithoutBorders;
+        image = imageWithoutBorders;
     }
 
-    private static boolean detectBorder() {
+    protected static boolean detectBorder() {
 
         for (int i = 1; i < height*0.1; i++) {
             for (int j = 1; j < width; j++) {

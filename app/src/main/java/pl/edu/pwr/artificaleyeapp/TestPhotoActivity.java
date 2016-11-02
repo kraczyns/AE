@@ -1,6 +1,5 @@
 package pl.edu.pwr.artificaleyeapp;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -22,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 public class TestPhotoActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    public final static String EXTRA_IMAGE = "BitmapImage";
     public static String filename;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -31,10 +29,15 @@ public class TestPhotoActivity extends AppCompatActivity {
     private GoogleApiClient client;
 
     public void intentConvertPhoto() throws FileNotFoundException, UnsupportedEncodingException {
-        Binarize binarize = new Binarize();
+
+        BitmapHandler bitmapHandler = new BitmapHandler();
+        ImageConverter imageConverter = new ImageConverter(bitmapHandler.openFile(this, filename));
+
         Intent intent = new Intent(this, CameraActivity.class);
-        Bitmap imageBitmap = binarize.toBitmap(this, filename, null);
-        intent.putExtra(EXTRA_IMAGE, binarize.scaleDownBitmap(imageBitmap, 100, this));
+        Bundle extra = new Bundle();
+        extra.putParcelable(MainActivity.EXTRA_IMAGE, bitmapHandler.scaleDownBitmap(imageConverter.getImage(),100, this));
+        extra.putString(MainActivity.EXTRA_TEXT, imageConverter.getRecognizedText());
+        intent.putExtras(extra);
         startActivity(intent);
     }
 

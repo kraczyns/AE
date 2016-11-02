@@ -1,29 +1,20 @@
 package pl.edu.pwr.artificaleyeapp;
 
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
     public final static String EXTRA_IMAGE = "BitmapImage";
+    public final static String EXTRA_TEXT = "RecognizedString";
+public final static String EXTRA_CAM = "CameraData";
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static boolean defaultMode = true;
     static public int h, w, lT, hT;
@@ -72,21 +63,17 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            Bitmap image = (Bitmap) extras.get(EXTRA_CAM);
 
-            Binarize binarize = new Binarize();
-            Bitmap bitmap = null;
-            try {
-                bitmap = binarize.toBitmap(this, "xxx", imageBitmap);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            BitmapHandler bitmapHandler = new BitmapHandler();
+            ImageConverter imageConverter = new ImageConverter(image);
 
-            Intent camIntent = new Intent(this, CameraActivity.class);
-            camIntent.putExtra(EXTRA_IMAGE, bitmap);
-            startActivity(camIntent);
+            Intent intent = new Intent(this, CameraActivity.class);
+            Bundle extra = new Bundle();
+            extra.putParcelable(MainActivity.EXTRA_IMAGE, imageConverter.getImage());
+            extra.putString(MainActivity.EXTRA_TEXT, imageConverter.getRecognizedText());
+            intent.putExtras(extra);
+            startActivity(intent);
         }
    }
 }
