@@ -1,6 +1,11 @@
 package pl.edu.pwr.artificaleyeapp;
 
 import android.graphics.Bitmap;
+import android.os.Environment;
+
+import com.googlecode.tesseract.android.TessBaseAPI;
+
+import static android.os.Environment.getExternalStorageDirectory;
 
 /**
  * Created by nieop on 02.11.2016.
@@ -33,12 +38,13 @@ public class ImageConverter extends BitmapConverter {
     }
 
     private static void doMagic() {
-//        TessBaseAPI baseApi = new TessBaseAPI();
-//        baseApi.setDebug(true);
-//        baseApi.init(DATA_PATH, LANGUAGE);
-//        baseApi.setImage(image);
-//        recognizedText = baseApi.getUTF8Text();
-//        baseApi.end();
+        TessBaseAPI baseApi = new TessBaseAPI();
+        baseApi.setDebug(true);
+        String path = "/mnt/sdcard/";
+        baseApi.init(path, LANGUAGE);
+        baseApi.setImage(getImage());
+        recognizedText = baseApi.getUTF8Text();
+        baseApi.end();
     }
 
 }

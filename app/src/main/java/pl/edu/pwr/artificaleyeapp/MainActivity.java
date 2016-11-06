@@ -14,7 +14,7 @@ import java.io.UnsupportedEncodingException;
 public class MainActivity extends AppCompatActivity {
     public final static String EXTRA_IMAGE = "BitmapImage";
     public final static String EXTRA_TEXT = "RecognizedString";
-public final static String EXTRA_CAM = "CameraData";
+public final static String EXTRA_CAM = "data";
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static boolean defaultMode = true;
     static public int h, w, lT, hT;
@@ -65,7 +65,6 @@ public final static String EXTRA_CAM = "CameraData";
             Bundle extras = data.getExtras();
             Bitmap image = (Bitmap) extras.get(EXTRA_CAM);
 
-            BitmapHandler bitmapHandler = new BitmapHandler();
             ImageConverter imageConverter = new ImageConverter(image);
 
             Intent intent = new Intent(this, CameraActivity.class);
