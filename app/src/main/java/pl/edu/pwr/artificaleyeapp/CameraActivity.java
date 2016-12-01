@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,14 +22,19 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.File;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class CameraActivity extends AppCompatActivity {
 
+    private static final String SPEAK_REPEATEDLY = "";
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+    TextToSpeech textToSpeech;
 
     public void intentBack() {
         Intent back = new Intent(this, MainActivity.class);
@@ -39,23 +45,59 @@ public class CameraActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-
         final Button back = (Button) findViewById(R.id.backButton);
         final ImageView imageView = (ImageView) findViewById(R.id.takenPhoto);
-        final TextView textView = (TextView) findViewById(R.id.textView);
-
-        imageView.setImageBitmap((Bitmap) getIntent().getExtras().getParcelable(MainActivity.EXTRA_IMAGE));
-        textView.setText(getIntent().getExtras().getString(MainActivity.EXTRA_TEXT));
-
-        back.setOnClickListener(new View.OnClickListener() {
+        final Button say = (Button) findViewById(R.id.buttonSay);
+        final TextView text = (TextView) findViewById(R.id.textView);
+        textToSpeech=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
-            public void onClick(View v) {
-                intentBack();
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    Locale locale = new Locale("pl","PL");
+                    textToSpeech.setLanguage(locale);
+                }
             }
         });
+
+        imageView.setImageBitmap((Bitmap) getIntent().getExtras().getParcelable(MainActivity.EXTRA_IMAGE));
+
+        final String toSpeak = getIntent().getExtras().getString(MainActivity.EXTRA_TEXT);
+        text.setText(toSpeak);
+        Toast.makeText(this, toSpeak, Toast.LENGTH_LONG);
+        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+    Timer timer = new Timer();
+    final long DELAY = 500; // milliseconds
+    timer.cancel();
+    timer = new Timer();
+    timer.schedule(
+            new TimerTask() {
+                @Override
+                public void run() {
+                    textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+                }
+            },
+            DELAY
+    );
+    say.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    });
+
+
+    back.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            intentBack();
+        }
+    });
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+
     }
 
     @Override

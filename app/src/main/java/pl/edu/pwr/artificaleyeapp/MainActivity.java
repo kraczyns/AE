@@ -5,10 +5,16 @@ import android.graphics.Bitmap;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,6 +24,15 @@ public final static String EXTRA_CAM = "data";
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static boolean defaultMode = true;
     static public int h, w, lT, hT;
+
+private static final String TAG = "MainActivity";
+   static {
+       if (!OpenCVLoader.initDebug()) {
+           Log.d(TAG, "OpenCV not loaded.");
+       } else {
+           Log.d(TAG, "OpenCV loaded.");
+       }
+   }
 
     public void intentCameraPhoto()
     {
@@ -65,7 +80,12 @@ public final static String EXTRA_CAM = "data";
             Bundle extras = data.getExtras();
             Bitmap image = (Bitmap) extras.get(EXTRA_CAM);
 
-            ImageConverter imageConverter = new ImageConverter(image);
+            ImageConverter imageConverter = null;
+            try {
+                imageConverter = new ImageConverter(image);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             Intent intent = new Intent(this, CameraActivity.class);
             Bundle extra = new Bundle();

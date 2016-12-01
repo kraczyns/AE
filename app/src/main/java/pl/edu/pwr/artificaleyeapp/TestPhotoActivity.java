@@ -14,6 +14,7 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -29,7 +30,7 @@ public class TestPhotoActivity extends AppCompatActivity {
      */
     private GoogleApiClient client;
 
-    public void intentConvertPhoto() throws FileNotFoundException, UnsupportedEncodingException {
+    public void intentConvertPhoto() throws IOException {
 
         BitmapHandler bitmapHandler = new BitmapHandler();
         ImageConverter imageConverter = new ImageConverter(bitmapHandler.openFile(this, filename));
@@ -56,15 +57,13 @@ public class TestPhotoActivity extends AppCompatActivity {
             {
                 @Override
                 public void onClick (View v){
-                filename = "piastow";
+                filename = "golina";
                 try {
                     intentConvertPhoto();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
+                }
             }
 
             );
@@ -76,9 +75,7 @@ public class TestPhotoActivity extends AppCompatActivity {
                 filename = "strefaruchu";
                 try {
                     intentConvertPhoto();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -90,9 +87,7 @@ public class TestPhotoActivity extends AppCompatActivity {
                 filename = "uwaga";
                 try {
                     intentConvertPhoto();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

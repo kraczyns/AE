@@ -5,7 +5,7 @@
     android:weightSum="1">
 
     <ImageButton
-        android:src="@drawable/piastow_m"
+        android:src="@drawable/golina_m"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Piastow"

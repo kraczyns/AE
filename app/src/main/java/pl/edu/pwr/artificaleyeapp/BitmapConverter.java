@@ -9,6 +9,20 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.os.Environment;
+import java.util.List;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,6 +33,16 @@ import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+
+import static org.opencv.imgproc.Imgproc.GaussianBlur;
+import static org.opencv.imgproc.Imgproc.boundingRect;
+import static org.opencv.imgproc.Imgproc.connectedComponentsWithStats;
+import static org.opencv.imgproc.Imgproc.cvtColor;
+import static org.opencv.imgproc.Imgproc.findContours;
+import static org.opencv.imgproc.Imgproc.line;
+import static org.opencv.imgproc.Imgproc.minAreaRect;
+import static org.opencv.imgproc.Imgproc.rectangle;
 
 /**
  * Created by nieop on 30.10.2016.
@@ -87,7 +111,8 @@ public class BitmapConverter {
         int color;
         int newPixel;
 
-        int threshold = threshold();
+        int threshold = 100;
+        //threshold();
 
         Bitmap tmp = Bitmap.createBitmap(image);
 
@@ -126,8 +151,41 @@ public class BitmapConverter {
     }
 
     private static int threshold() {
-        return 100;
-    }
+
+        int[] bitmap = doBitmap();
+        int total = width * height;
+
+        float sum = 0;
+        for (int i = 0; i < 256; i++) sum += i * bitmap[i];
+
+        float sumB = 0;
+        int wB = 0;
+        int wF = 0;
+
+        float varMax = 0;
+        int threshold = 0;
+
+        for (int i = 0; i < 256; i++) {
+            wB += bitmap[i];
+            if (wB == 0) continue;
+            wF = total - wB;
+
+            if (wF == 0) break;
+
+            sumB += (float) (i * bitmap[i]);
+            float mB = sumB / wB;
+            float mF = (sum - sumB) / wF;
+
+            float varBetween = (float) wB * (float) wF * (mB - mF) * (mB - mF);
+
+            if (varBetween > varMax) {
+                varMax = varBetween;
+                threshold = i;
+            }
+        }
+
+        return threshold;
+        }
 
     private static int[] doBitmap() {
 
@@ -211,4 +269,45 @@ public class BitmapConverter {
         return false;
     }
 
+    protected static void findRectangle() {
+//Bitmap to Mat
+        Mat mat = new Mat();
+        Utils.bitmapToMat(image, mat);
+        //Mat to gray
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat, gray, Imgproc.COLOR_RGBA2GRAY);
+        Imgproc.Canny(gray, gray, 50, 200);
+        double max = 0;
+        //Find contours
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Imgproc.findContours( gray, contours, new Mat(), Imgproc.RETR_LIST,Imgproc.CHAIN_APPROX_SIMPLE);
+        MatOfPoint2f approxCurve = new MatOfPoint2f();
+        int x = 1;
+        Bitmap bmp = null;
+        Mat copy = new Mat();
+        //For each contour found
+        for (int i=0; i<contours.size(); i++)
+        {
+            //Convert contours(i) from MatOfPoint to MatOfPoint2f
+            MatOfPoint2f contour2f = new MatOfPoint2f( contours.get(i).toArray() );
+            //Processing on mMOP2f1 which is in type MatOfPoint2f
+            double approxDistance = Imgproc.arcLength(contour2f, true)*0.02;
+            Imgproc.approxPolyDP(contour2f, approxCurve, approxDistance, true);
+
+            //Convert back to MatOfPoint
+            MatOfPoint points = new MatOfPoint( approxCurve.toArray() );
+
+            // Get bounding rect of contour
+            Rect rect = Imgproc.boundingRect(points);
+
+if (rect.area() > max) {
+    Rect roi = new Rect(rect.x, rect.y, rect.width, rect.height);
+    bmp = Bitmap.createBitmap(rect.width, rect.height, Bitmap.Config.ARGB_8888);
+    copy = new Mat(mat, roi);
+max = rect.area();
+            }
+        }
+        Utils.matToBitmap(copy, bmp);
+        image = bmp;
+    }
 }
